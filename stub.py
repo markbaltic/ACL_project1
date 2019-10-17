@@ -25,6 +25,12 @@ class Enc:
     def l(self,i,j): return 'l_{}_{}'.format(i,j)
     def r(self,i,j): return 'r_{}_{}'.format(i,j)
     def p(self,j,i): return 'p_{}_{}'.format(i,j)
+    def a(self,r,j): return 'a_{}_{}'.format(r,j)
+    def u(self,r,j): return 'u_{}_{}'.format(r,j)
+    def c(self,j): return 'c_{}'.format(j)
+    def d0(self,r,j): return 'd0_{}_{}'.format(r,j)
+    def d1(self,r,j): return 'd1_{}_{}'.format(r,j)
+	
     
 
     def add_constraint(self, constraint):
@@ -132,12 +138,61 @@ class Enc:
                 P = [self.p(i,j) for i in range(int(j/2),min(j-1,self.node_count)+1)]
                 self.add_atmost_one(P)
                 self.add_constraint(P)
+		
+		#Constrains for features
+		#index of feature is denoted with "k"
+        for k in range(1,self.input_count+1):
+			#(7)
+            self.add_constraint(neg(self.d0(k,1)))
+            for j in range(2,self.node_count+1):
+                list_j = []
+                for i in range(int(j/2),j):
+                    list_j.append(self.mk_and(self.p(i,j),self.d0(k,i))) #right implicaton
+                    list_j.append(self.mk_and(self.a(k,j),self.r(i,j))) #right implication
+                    self.add_constraint([neg(self.p(i,j)),neg(self.d0(k,i)),self.d0(k,j)]) #left implication
                 
-                    
-#        for i in range(1,self.node_count+1):
-##            for j in range(i+2,min(2*i+1,self.node_count)+1):
-#            for j in LR(i):
-#                self.add_iff(self.l(i,j),self.r(i,j+1))
+                self.add_constraint([neg(self.d0(k,j))]+list_j) #right implication
+
+			#(8)
+            self.add_constraint(neg(self.d1(k,1)))
+            
+            for j in range(2,self.node_count+1):
+                list_j = []
+                for i in range(int(j/2),j):
+                    list_j.append(self.mk_and(self.p(i,j),self.d1(k,i))) #right implicaton
+                    list_j.append(self.mk_and(self.a(k,j),self.l(i,j))) #right implication
+                    self.add_constraint([neg(self.p(i,j)),neg(self.d1(k,i)),self.d1(k,j)]) #left implication
+
+                self.add_constraint([neg(self.d1(k,j))]+list_j) #right implication
+			
+
+        for j in range(1, self.node_count+1):
+			#(9.1)
+            for i in range(max(1,int(j/2)),j):
+                self.add_constraint([neg(self.u(k,i)),neg(self.p(i,j)),neg(self.a(k,j))])
+			
+			#(9.2)			
+            self.add_constraint([neg(self.u(k,j)),self.a(k,j)] + [self.mk_and(self.u(k,i),self.p(i,j)) for i in range(max(1,int(j/2)),j)]) #right implication
+			
+            self.add_constraint([self.u(k,j),neg(self.a(k,j))]) #left implication
+            for i in range(max(1,int(j/2)),j):
+                self.add_constraint([self.u(k,j),neg(self.u(k,i)),neg(self.p(i,j))])
+			
+			
+		
+        for j in range(1, self.node_count+1):
+		    #(10)
+            self.add_atmost_one([self.a(k,j) for k in range(1,self.input_count+1)])
+            self.add_constraint([self.a(k,j) for k in range(1,self.input_count+1)]+[self.v(j)])
+
+		#(11)
+        for k in range(1,self.input_count+1):
+            self.add_constraint([neg(self.v(j)),neg(self.a(k,j))])
+			
+			
+        
+
+	    
 
             
         
