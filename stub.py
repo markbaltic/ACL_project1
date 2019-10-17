@@ -6,7 +6,7 @@
 import sys,subprocess 
 from itertools import combinations
 
-solver = './lingeling'
+solver = './cryptominisat5'
 
 def neg(l): return l[1:] if l[0] == '-' else '-'+l
 def var(l): return l[1:] if l[0] == '-' else l
@@ -107,7 +107,7 @@ class Enc:
         #(1)
         self.add_constraint([neg(self.v(1))])
         
-        #RR
+        
         for i in range(1,self.node_count+1):
 #            for j in range(i+1,min(2*i,self.node_count-1)+1):
             for j in LR(i):
@@ -117,7 +117,7 @@ class Enc:
                 self.add_iff(self.l(i,j),self.r(i,j+1))
                 
                 #(5.1)
-                self.add_iff(self.p(j,i),self.l(i,j))
+                self.add_iff(self.p(i,j),self.l(i,j))
                 
             #(4)    
             self.add_atmost_one([self.l(i,j) for j in LR(i)])
@@ -125,7 +125,7 @@ class Enc:
             
             for j in RR(i):
                 #(5.2)
-                self.add_iff(self.p(j,i),self.r(i,j))
+                self.add_iff(self.p(i,j),self.r(i,j))
                 
             for j in range(2,self.node_count+1):
                 #(6)
