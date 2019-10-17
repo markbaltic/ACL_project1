@@ -30,6 +30,14 @@ class Enc:
     def c(self,j): return 'c_{}'.format(j)
     def d0(self,r,j): return 'd0_{}_{}'.format(r,j)
     def d1(self,r,j): return 'd1_{}_{}'.format(r,j)
+    def d(self,n,r,j):
+        if n == 0:
+            return self.d0(r,j)
+        elif n == 1:
+            return self.d1(r,j)
+        else:
+            return ("Wrong feature value!!!!!")
+  
 	
     
 
@@ -143,7 +151,7 @@ class Enc:
 		#index of feature is denoted with "k"
         for k in range(1,self.input_count+1):
 			#(7)
-            self.add_constraint(neg(self.d0(k,1)))
+            self.add_constraint([neg(self.d0(k,1))])
             for j in range(2,self.node_count+1):
                 list_j = []
                 for i in range(int(j/2),j):
@@ -154,7 +162,7 @@ class Enc:
                 self.add_constraint([neg(self.d0(k,j))]+list_j) #right implication
 
 			#(8)
-            self.add_constraint(neg(self.d1(k,1)))
+            self.add_constraint([neg(self.d1(k,1))])
             
             for j in range(2,self.node_count+1):
                 list_j = []
@@ -189,8 +197,28 @@ class Enc:
         for k in range(1,self.input_count+1):
             self.add_constraint([neg(self.v(j)),neg(self.a(k,j))])
 			
-			
-        
+        #self.add_constraint([self.c(3)])
+        for example in samples:
+            #(12)
+            #print("Example",example, type(example))
+            #print("class",example[-1],type(example[-1]))
+            
+            if example[-1] == 1:
+                for j in range(1, self.node_count+1):
+                    self.add_constraint([neg(self.v(j)),self.c(j)]+[self.d(example[k],k+1,j) for k in range(self.input_count)])
+            #(13)        
+            elif example[-1] == 0:
+                for j in range(1, self.node_count+1):
+                    #for k in range(self.input_count):
+                        #print("FFFF",self.d(example[k],k+1,j),"-"*30)
+                    self.add_constraint([neg(self.v(j)),neg(self.c(j))]+[self.d(example[k],k+1,j) for k in range(self.input_count)])
+                    
+            else:
+                print("Example class not correct!!!!!")
+                    
+                
+                
+                
 
 	    
 
