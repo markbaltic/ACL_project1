@@ -120,8 +120,8 @@ class Enc:
                 self.add_iff(self.p(j,i),self.l(i,j))
                 
             #(4)    
-            self.add_atmost_one(LR(i))
-            self.add_constraint(LR(i)+[self.v(i)])
+            self.add_atmost_one([self.l(i,j) for j in LR(i)])
+            self.add_constraint([self.l(i,j) for j in LR(i)]+[self.v(i)])
             
             for j in RR(i):
                 #(5.2)
