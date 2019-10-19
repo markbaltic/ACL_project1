@@ -222,6 +222,13 @@ class Enc:
                 for j in range(1,self.node_count+1):
                     self.add_constraint([neg(self.v(j)),neg(self.c(j))]+[self.d(example[k],k+1,j) for k in range(self.input_count)])
 
+        
+        #(14 haha) - not existing l_ij and r_ij are false!
+        for i in range(1, self.node_count+1):
+            for j in RR(i):
+                self.add_constraint([neg(self.l(i,j))])
+            for j in LR(i):
+                self.add_constraint([neg(self.r(i,j))])
             
         
 #        # -x1 | -x2
