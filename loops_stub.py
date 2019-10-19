@@ -158,30 +158,71 @@ class Enc:
         for k in range(1,self.input_count+1):
             self.add_constraint([neg(self.d0(k,1))])
             for j in range(2,self.node_count+1):
-                list_j = []
-                for i in range(int(j/2),j): #right implicaton
-                    list_j.append(self.mk_and(self.p(i,j),self.d0(k,i))) 
-                    list_j.append(self.mk_and(self.a(k,i),self.r(i,j)))
-                self.add_constraint([neg(self.d0(k,i))]+list_j)
-                
-                for i in range(int(j/2),j): #left implication 
-                    self.add_constraint([neg(self.p(i,j)),neg(self.d0(k,i)),self.d0(k,j)])
-                    self.add_constraint([neg(self.a(k,i)),neg(self.r(i,j)),self.d0(k,j)])
+                if j%2 == 1:
+                    list_j = []
+                    for i in range(int(j/2),j): #right implicaton
+                        list_j.append(self.mk_and(self.p(i,j),self.d0(k,i))) 
+                        list_j.append(self.mk_and(self.a(k,i),self.r(i,j)))
+                    self.add_constraint([neg(self.d0(k,i))]+list_j)
+                    
+                    for i in range(int(j/2),j): #left implication 
+                        self.add_constraint([neg(self.p(i,j)),neg(self.d0(k,i)),self.d0(k,j)])
+                        self.add_constraint([neg(self.a(k,i)),neg(self.r(i,j)),self.d0(k,j)])
         
         #(8)
         for k in range(1,self.input_count+1):
             self.add_constraint([neg(self.d1(k,1))])
             for j in range(2,self.node_count+1):
-                list_j = []
-                for i in range(int(j/2),j): #right implicaton
-                    list_j.append(self.mk_and(self.p(i,j),self.d1(k,i))) 
-                    list_j.append(self.mk_and(self.a(k,i),self.l(i,j)))
-                self.add_constraint([neg(self.d1(k,i))]+list_j)
-                
-                for i in range(int(j/2),j): #left implication 
-                    self.add_constraint([neg(self.p(i,j)),neg(self.d1(k,i)),self.d1(k,j)])
-                    self.add_constraint([neg(self.a(k,i)),neg(self.l(i,j)),self.d1(k,j)])
+                if j%2 == 0:
+                    list_j = []
+                    for i in range(int(j/2),j): #right implicaton
+                        list_j.append(self.mk_and(self.p(i,j),self.d1(k,i))) 
+                        list_j.append(self.mk_and(self.a(k,i),self.l(i,j)))
+                    self.add_constraint([neg(self.d1(k,i))]+list_j)
+                    
+                    for i in range(int(j/2),j): #left implication 
+                        self.add_constraint([neg(self.p(i,j)),neg(self.d1(k,i)),self.d1(k,j)])
+                        self.add_constraint([neg(self.a(k,i)),neg(self.l(i,j)),self.d1(k,j)])
+
+        #(9.1)        
+        for k in range(1,self.input_count+1):
+            for j in range(1, self.node_count+1):
+                for i in range(max(1,int(j/2)),j): ####is the begining of range ok???
+                    self.add_constraint([neg(self.u(k,i)),neg(self.p(i,j)),neg(self.a(k,j))])
+
+        #(9.2)
+        for k in range(1,self.input_count+1):
+            for j in range(1, self.node_count+1):
+                self.add_constraint([neg(self.u(k,j)),self.a(k,j)] + [self.mk_and(self.u(k,i),self.p(i,j)) for i in range(max(1,int(j/2)),j)]) #right implication
+
+                self.add_constraint([self.u(k,j),neg(self.a(k,j))]) #left implication
+                for i in range(max(1,int(j/2)),j): #left implication
+                    self.add_constraint([self.u(k,j),neg(self.u(k,i)),neg(self.p(i,j))])
         
+        #(10)
+        for k in range(1,self.input_count+1):
+            for j in range(1, self.node_count+1):
+                self.add_atmost_one([self.a(k,j) for k in range(1,self.input_count+1)])
+                self.add_constraint([self.a(k,j) for k in range(1,self.input_count+1)]+[self.v(j)])
+
+        #(11)
+        for k in range(1,self.input_count+1):
+            for j in range(1, self.node_count+1):
+                self.add_constraint([neg(self.v(j)),neg(self.a(k,j))])
+
+        #(12)
+        for example in samples:
+            if example[-1] == 1:
+                for j in range(1,self.node_count+1):
+                    self.add_constraint([neg(self.v(j)),self.c(j)]+[self.d(example[k],k+1,j) for k in range(self.input_count)])
+
+        #(13)
+        for example in samples:
+            if example[-1] == 0:
+                for j in range(1,self.node_count+1):
+                    self.add_constraint([neg(self.v(j)),neg(self.c(j))]+[self.d(example[k],k+1,j) for k in range(self.input_count)])
+
+            
         
 #        # -x1 | -x2
 #        self.add_constraint([neg(self.x(1)), neg(self.x(2))])
